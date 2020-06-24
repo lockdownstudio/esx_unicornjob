@@ -13,25 +13,30 @@ TriggerEvent('esx_society:registerSociety', 'unicorn', 'Unicorn', 'society_unico
 
 RegisterServerEvent('esx_unicornjob:getStockItem')
 AddEventHandler('esx_unicornjob:getStockItem', function(itemName, count)
+	local _source = source
+	local xPlayer = ESX.GetPlayerFromId(_source)
 
-  local xPlayer = ESX.GetPlayerFromId(source)
+	TriggerEvent('esx_addoninventory:getSharedInventory', 'society_unicorn', function(inventory)
+		local inventoryItem = inventory.getItem(itemName)
 
-  TriggerEvent('esx_addoninventory:getSharedInventory', 'society_unicorn', function(inventory)
+		-- is there enough in the society?
+		if count > 0 and inventoryItem.count >= count then
 
-    local item = inventory.getItem(itemName)
-
-    if item.count >= count then
-      inventory.removeItem(itemName, count)
-      xPlayer.addInventoryItem(itemName, count)
-    else
-      TriggerClientEvent('esx:showNotification', xPlayer.source, _U('quantity_invalid'))
-    end
-
-    TriggerClientEvent('esx:showNotification', xPlayer.source, _U('you_removed') .. count .. ' ' .. item.label)
-
-  end)
-
+			-- can the player carry the said amount of x item?
+			-- print('Can carry value: ' .. xPlayer.canCarryItem(itemName, count))
+			if xPlayer.canCarryItem(itemName, count) then
+				inventory.removeItem(itemName, count)
+				xPlayer.addInventoryItem(itemName, count)
+				xPlayer.showNotification(_U('have_withdrawn', count, inventoryItem.label))
+			else
+				xPlayer.showNotification(_U('quantity_invalid') .. " Player cannot carry")
+			end
+		else
+			xPlayer.showNotification(_U('quantity_invalid'))
+		end
+	end)
 end)
+
 
 ESX.RegisterServerCallback('esx_unicornjob:getStockItems', function(source, cb)
 
@@ -44,48 +49,50 @@ end)
 RegisterServerEvent('esx_unicornjob:putStockItems')
 AddEventHandler('esx_unicornjob:putStockItems', function(itemName, count)
 
-  local xPlayer = ESX.GetPlayerFromId(source)
+	local xPlayer = ESX.GetPlayerFromId(source)
+	local sourceItem = xPlayer.getInventoryItem(itemName)
 
-  TriggerEvent('esx_addoninventory:getSharedInventory', 'society_unicorn', function(inventory)
+	TriggerEvent('esx_addoninventory:getSharedInventory', 'society_unicorn', function(inventory)
+		local inventoryItem = inventory.getItem(itemName)
 
-    local item = inventory.getItem(itemName)
-    local playerItemCount = xPlayer.getInventoryItem(itemName).count
-
-    if item.count >= 0 and count <= playerItemCount then
-      xPlayer.removeInventoryItem(itemName, count)
-      inventory.addItem(itemName, count)
-    else
-      TriggerClientEvent('esx:showNotification', xPlayer.source, _U('invalid_quantity'))
-    end
-
-    TriggerClientEvent('esx:showNotification', xPlayer.source, _U('you_added') .. count .. ' ' .. item.label)
-
-  end)
-
+		-- does the player have enough of the item?
+		if sourceItem.count >= count and count > 0 then
+			xPlayer.removeInventoryItem(itemName, count)
+			inventory.addItem(itemName, count)
+			xPlayer.showNotification(_U('have_deposited', count, inventoryItem.label))
+		else
+			xPlayer.showNotification(_U('quantity_invalid'))
+		end
+	end)
 end)
 
 
 RegisterServerEvent('esx_unicornjob:getFridgeStockItem')
 AddEventHandler('esx_unicornjob:getFridgeStockItem', function(itemName, count)
 
-  local xPlayer = ESX.GetPlayerFromId(source)
-
-  TriggerEvent('esx_addoninventory:getSharedInventory', 'society_unicorn_fridge', function(inventory)
-
-    local item = inventory.getItem(itemName)
-
-    if item.count >= count then
-      inventory.removeItem(itemName, count)
-      xPlayer.addInventoryItem(itemName, count)
-    else
-      TriggerClientEvent('esx:showNotification', xPlayer.source, _U('quantity_invalid'))
-    end
-
-    TriggerClientEvent('esx:showNotification', xPlayer.source, _U('you_removed') .. count .. ' ' .. item.label)
-
-  end)
-
-end)
+    local _source = source
+    local xPlayer = ESX.GetPlayerFromId(_source)
+    
+    TriggerEvent('esx_addoninventory:getSharedInventory', 'society_unicorn_fridge', function(inventory)
+        local inventoryItem = inventory.getItem(itemName)
+    
+        -- is there enough in the society?
+        if count > 0 and inventoryItem.count >= count then
+    
+            -- can the player carry the said amount of x item?
+            -- print('Can carry value: ' .. xPlayer.canCarryItem(itemName, count))
+            if xPlayer.canCarryItem(itemName, count) then
+                inventory.removeItem(itemName, count)
+                xPlayer.addInventoryItem(itemName, count)
+                xPlayer.showNotification(_U('have_withdrawn', count, inventoryItem.label))
+            else
+                xPlayer.showNotification(_U('quantity_invalid') .. " Player cannot carry")
+            end
+        else
+            xPlayer.showNotification(_U('quantity_invalid'))
+        end
+    end)
+    end)
 
 ESX.RegisterServerCallback('esx_unicornjob:getFridgeStockItems', function(source, cb)
 
@@ -97,35 +104,27 @@ end)
 
 RegisterServerEvent('esx_unicornjob:putFridgeStockItems')
 AddEventHandler('esx_unicornjob:putFridgeStockItems', function(itemName, count)
-
-  local xPlayer = ESX.GetPlayerFromId(source)
-
-  TriggerEvent('esx_addoninventory:getSharedInventory', 'society_unicorn_fridge', function(inventory)
-
-    local item = inventory.getItem(itemName)
-    local playerItemCount = xPlayer.getInventoryItem(itemName).count
-
-    if item.count >= 0 and count <= playerItemCount then
-      xPlayer.removeInventoryItem(itemName, count)
-      inventory.addItem(itemName, count)
-    else
-      TriggerClientEvent('esx:showNotification', xPlayer.source, _U('invalid_quantity'))
-    end
-
-    TriggerClientEvent('esx:showNotification', xPlayer.source, _U('you_added') .. count .. ' ' .. item.label)
-
-  end)
-
+    local xPlayer = ESX.GetPlayerFromId(source)
+    local sourceItem = xPlayer.getInventoryItem(itemName)
+    
+    TriggerEvent('esx_addoninventory:getSharedInventory', 'society_unicorn_fridge', function(inventory)
+        local inventoryItem = inventory.getItem(itemName)
+    
+        -- does the player have enough of the item?
+        if sourceItem.count >= count and count > 0 then
+            xPlayer.removeInventoryItem(itemName, count)
+            inventory.addItem(itemName, count)
+            xPlayer.showNotification(_U('have_deposited', count, inventoryItem.label))
+        else
+            xPlayer.showNotification(_U('quantity_invalid'))
+        end
+    end)
 end)
-
 
 RegisterServerEvent('esx_unicornjob:buyItem')
 AddEventHandler('esx_unicornjob:buyItem', function(itemName, price, itemLabel)
 
-    local _source = source
-    local xPlayer  = ESX.GetPlayerFromId(_source)
-    local limit = xPlayer.getInventoryItem(itemName).limit
-    local qtty = xPlayer.getInventoryItem(itemName).count
+    local xPlayer  = ESX.GetPlayerFromId(source)
     local societyAccount = nil
 
     TriggerEvent('esx_addonaccount:getSharedAccount', 'society_unicorn', function(account)
@@ -133,15 +132,15 @@ AddEventHandler('esx_unicornjob:buyItem', function(itemName, price, itemLabel)
       end)
     
     if societyAccount ~= nil and societyAccount.money >= price then
-        if qtty < limit then
+        if xPlayer.canCarryItem(itemName, count) then
             societyAccount.removeMoney(price)
             xPlayer.addInventoryItem(itemName, 1)
-            TriggerClientEvent('esx:showNotification', _source, _U('bought') .. itemLabel)
+            TriggerClientEvent('esx:showNotification', source, _U('bought') .. itemLabel)
         else
-            TriggerClientEvent('esx:showNotification', _source, _U('max_item'))
+            TriggerClientEvent('esx:showNotification', source, _U('max_item'))
         end
     else
-        TriggerClientEvent('esx:showNotification', _source, _U('not_enough'))
+        TriggerClientEvent('esx:showNotification', source, _U('not_enough'))
     end
 
 end)
@@ -577,88 +576,70 @@ ESX.RegisterServerCallback('esx_unicornjob:getVaultWeapons', function(source, cb
 end)
 
 ESX.RegisterServerCallback('esx_unicornjob:addVaultWeapon', function(source, cb, weaponName)
+	local xPlayer = ESX.GetPlayerFromId(source)
 
-  local xPlayer = ESX.GetPlayerFromId(source)
+	if removeWeapon then
+		xPlayer.removeWeapon(weaponName)
+	end
 
-  xPlayer.removeWeapon(weaponName)
+	TriggerEvent('esx_datastore:getSharedDataStore', 'society_unicorn', function(store)
+		local weapons = store.get('weapons') or {}
+		local foundWeapon = false
 
-  TriggerEvent('esx_datastore:getSharedDataStore', 'society_unicorn', function(store)
+		for i=1, #weapons, 1 do
+			if weapons[i].name == weaponName then
+				weapons[i].count = weapons[i].count + 1
+				foundWeapon = true
+				break
+			end
+		end
 
-    local weapons = store.get('weapons')
+		if not foundWeapon then
+			table.insert(weapons, {
+				name  = weaponName,
+				count = 1
+			})
+		end
 
-    if weapons == nil then
-      weapons = {}
-    end
-
-    local foundWeapon = false
-
-    for i=1, #weapons, 1 do
-      if weapons[i].name == weaponName then
-        weapons[i].count = weapons[i].count + 1
-        foundWeapon = true
-      end
-    end
-
-    if not foundWeapon then
-      table.insert(weapons, {
-        name  = weaponName,
-        count = 1
-      })
-    end
-
-     store.set('weapons', weapons)
-
-     cb()
-
-  end)
-
+		store.set('weapons', weapons)
+		cb()
+	end)
 end)
 
 ESX.RegisterServerCallback('esx_unicornjob:removeVaultWeapon', function(source, cb, weaponName)
 
-  local xPlayer = ESX.GetPlayerFromId(source)
+	local xPlayer = ESX.GetPlayerFromId(source)
+	xPlayer.addWeapon(weaponName, 500)
 
-  xPlayer.addWeapon(weaponName, 1000)
+	TriggerEvent('esx_datastore:getSharedDataStore', 'society_unicorn', function(store)
+		local weapons = store.get('weapons') or {}
 
-  TriggerEvent('esx_datastore:getSharedDataStore', 'society_unicorn', function(store)
+		local foundWeapon = false
 
-    local weapons = store.get('weapons')
+		for i=1, #weapons, 1 do
+			if weapons[i].name == weaponName then
+				weapons[i].count = (weapons[i].count > 0 and weapons[i].count - 1 or 0)
+				foundWeapon = true
+				break
+			end
+		end
 
-    if weapons == nil then
-      weapons = {}
-    end
+		if not foundWeapon then
+			table.insert(weapons, {
+				name = weaponName,
+				count = 0
+			})
+		end
 
-    local foundWeapon = false
-
-    for i=1, #weapons, 1 do
-      if weapons[i].name == weaponName then
-        weapons[i].count = (weapons[i].count > 0 and weapons[i].count - 1 or 0)
-        foundWeapon = true
-      end
-    end
-
-    if not foundWeapon then
-      table.insert(weapons, {
-        name  = weaponName,
-        count = 0
-      })
-    end
-
-     store.set('weapons', weapons)
-
-     cb()
-
-  end)
-
+		store.set('weapons', weapons)
+		cb()
+	end)
 end)
 
 ESX.RegisterServerCallback('esx_unicornjob:getPlayerInventory', function(source, cb)
 
-  local xPlayer    = ESX.GetPlayerFromId(source)
-  local items      = xPlayer.inventory
+	local xPlayer = ESX.GetPlayerFromId(source)
+	local items   = xPlayer.inventory
 
-  cb({
-    items      = items
-  })
-
+	cb({items = items})
 end)
