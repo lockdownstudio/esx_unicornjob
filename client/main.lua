@@ -121,7 +121,7 @@ end
 
 function OpenCloakroomMenu()
 
-  local playerPed = GetPlayerPed(-1)
+  local playerPed = PlayerPedId()
 
   local elements = {
     { label = _U('citizen_wear'),     value = 'citizen_wear'},
@@ -520,8 +520,6 @@ function OpenGetStocksMenu()
 
   ESX.TriggerServerCallback('esx_unicornjob:getStockItems', function(items)
 
-    print(json.encode(items))
-
     local elements = {}
 
     for i=1, #items, 1 do
@@ -547,14 +545,15 @@ function OpenGetStocksMenu()
 
             local count = tonumber(data2.value)
 
-            if count == nil then
+            if not count then
               ESX.ShowNotification(_U('invalid_quantity'))
             else
               menu2.close()
               menu.close()
-              OpenGetStocksMenu()
-
               TriggerServerEvent('esx_unicornjob:getStockItem', itemName, count)
+
+              Citizen.Wait(300)
+              OpenGetStocksMenu()
             end
 
           end,
@@ -608,14 +607,15 @@ ESX.TriggerServerCallback('esx_unicornjob:getPlayerInventory', function(inventor
 
             local count = tonumber(data2.value)
 
-            if count == nil then
+            if not count then
               ESX.ShowNotification(_U('invalid_quantity'))
             else
               menu2.close()
               menu.close()
-              OpenPutStocksMenu()
-
               TriggerServerEvent('esx_unicornjob:putStockItems', itemName, count)
+
+              Citizen.Wait(300)
+              OpenPutStocksMenu()
             end
 
           end,
@@ -637,8 +637,6 @@ end
 function OpenGetFridgeStocksMenu()
 
   ESX.TriggerServerCallback('esx_unicornjob:getFridgeStockItems', function(items)
-
-    print(json.encode(items))
 
     local elements = {}
 
@@ -665,14 +663,15 @@ function OpenGetFridgeStocksMenu()
 
             local count = tonumber(data2.value)
 
-            if count == nil then
+            if not count then
               ESX.ShowNotification(_U('invalid_quantity'))
             else
               menu2.close()
               menu.close()
-              OpenGetStocksMenu()
-
               TriggerServerEvent('esx_unicornjob:getFridgeStockItem', itemName, count)
+
+              Citizen.Wait(300)
+              OpenGetStocksMenu()
             end
 
           end,
@@ -726,14 +725,15 @@ ESX.TriggerServerCallback('esx_unicornjob:getPlayerInventory', function(inventor
 
             local count = tonumber(data2.value)
 
-            if count == nil then
+            if not count then
               ESX.ShowNotification(_U('invalid_quantity'))
             else
               menu2.close()
               menu.close()
-              OpenPutFridgeStocksMenu()
-
               TriggerServerEvent('esx_unicornjob:putFridgeStockItems', itemName, count)
+              
+              Citizen.Wait(300)
+              OpenPutFridgeStocksMenu()
             end
 
           end,
@@ -792,7 +792,7 @@ end
 function OpenPutWeaponMenu()
 
   local elements   = {}
-  local playerPed  = GetPlayerPed(-1)
+  local playerPed  = PlayerPedId()
   local weaponList = ESX.GetWeaponList()
 
   for i=1, #weaponList, 1 do
@@ -866,7 +866,7 @@ end
 function animsAction(animObj)
     Citizen.CreateThread(function()
         if not playAnim then
-            local playerPed = GetPlayerPed(-1);
+            local playerPed = PlayerPedId()
             if DoesEntityExist(playerPed) then -- Check if ped exist
                 dataAnim = animObj
 
@@ -944,7 +944,7 @@ AddEventHandler('esx_unicornjob:hasEnteredMarker', function(zone)
 
     if zone == 'VehicleDeleters' then
 
-      local playerPed = GetPlayerPed(-1)
+      local playerPed = PlayerPedId()
 
       if IsPedInAnyVehicle(playerPed,  false) then
 
